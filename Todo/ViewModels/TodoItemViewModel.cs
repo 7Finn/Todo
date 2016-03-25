@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 
@@ -95,5 +98,29 @@ namespace Todo.ViewModels
             this.selectedItem = null;
         }
 
+
+        //把图片保存到应用目录下
+        public static async Task<Uri> SaveLocalImage(StorageFile file)
+        {
+            StorageFolder folder = ApplicationData.Current.LocalFolder;
+
+            using (FileRandomAccessStream stream = (FileRandomAccessStream)await file.OpenAsync(FileAccessMode.ReadWrite))
+            {
+                var inputStream = stream.GetInputStreamAt(0);
+                using (DataReader reader = new DataReader(inputStream))
+                {
+                    uint size = await reader.LoadAsync((uint)stream.Size);
+                    var buffer = reader.ReadBuffer(size);
+
+                    StorageFile sampleFile = await folder.CreateFileAsync(file.Name, CreationCollisionOption.ReplaceExisting);
+                    using (FileRandomAccessStream sampleStream = (FileRandomAccessStream)await sampleFile.OpenAsync(FileAccessMode.ReadWrite))
+                    {
+                        await sampleStream.WriteAsync(buffer);
+                        return new Uri(sampleFile.Path);
+                    }
+                }
+            }
+
+        }
     }
 }
