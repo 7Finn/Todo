@@ -42,6 +42,7 @@ namespace Todo
             viewTitleBar.BackgroundColor = Windows.UI.Colors.CornflowerBlue;
             viewTitleBar.ButtonBackgroundColor = Windows.UI.Colors.CornflowerBlue;
             this.ViewModel = new ViewModels.TodoItemViewModel();
+
         }
 
         ViewModels.TodoItemViewModel ViewModel { get; set; }
@@ -62,7 +63,6 @@ namespace Todo
             //注册共享数据
             dataTransferManager.DataRequested += DataTransferManager_DataRequested; 
         }
-
 
         private void AddItemButtonClick(object sender, RoutedEventArgs e)
         {
@@ -159,7 +159,6 @@ namespace Todo
             Clear();
         }
 
-
         private async void PickPicture(object sender, RoutedEventArgs e)
         {
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
@@ -186,8 +185,6 @@ namespace Todo
                 // this.textBlock.Text = "Operation cancelled.";
             }
         }
-
-        
 
 
         private void Clear()
@@ -264,11 +261,23 @@ namespace Todo
                 1. 异步方式获取文件
                 2. 添加到 List<IStorageItem>集合
                 */
-                StorageFile imageFile = await Package.Current.InstalledLocation.GetFileAsync("ms-appx:///Assets/Test.jpg");
-
+                string filepath = shareTodoItem.ImageUri.ToString();
+                string fileName = filepath.Substring(filepath.LastIndexOf("/") + 1);
+                StorageFile file;
+                if (filepath == "ms-appx:///Assets/Test.jpg")
+                {
+                    file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Test.jpg"));
+                }
+                else
+                {
+                    file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appdata:///local/" + fileName));
+                }
+                //StorageFile imageFile = await Package.Current.InstalledLocation.GetFileAsync("ms-appx:///Assets/Test.jpg");
+                //StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/Test.jpg"));
+                
                 //新方法；使用文件的方法也是可以的，但是要根据共享目标应用是否可用
-                request.Data.Properties.Thumbnail = RandomAccessStreamReference.CreateFromFile(imageFile);
-                request.Data.SetBitmap(RandomAccessStreamReference.CreateFromFile(imageFile));
+                request.Data.Properties.Thumbnail = RandomAccessStreamReference.CreateFromFile(file);
+                request.Data.SetBitmap(RandomAccessStreamReference.CreateFromFile(file));
             }
             catch (Exception ex)
             {
