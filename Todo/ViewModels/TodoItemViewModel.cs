@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SQLitePCL;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -22,8 +23,25 @@ namespace Todo.ViewModels
         private Models.TodoItem selectedItem = default(Models.TodoItem);
         public Models.TodoItem SelectedItem { get { return selectedItem; } set { this.selectedItem = value; } }
 
+
+        private void LoadDatabase()
+        {
+            var db = App.conn;
+            string sql = @"CREATE TABLE IF NOT EXISTS
+                           Customer (Id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                     ImageUri   VARCHAR(140),
+                                     Title      VARCHAR(140),
+                                     Details    VARCHAR(140),
+                                     Date       VARCHAR(140)
+                           );";
+            using (var statement = db.Prepare(sql))
+            {
+                statement.Step();
+            }
+        }
         public TodoItemViewModel()
         {
+            LoadDatabase();
             // 加个用来测试的item
             AddTodoItem(
                 new BitmapImage(new Uri("ms-appx:///Assets/Test.jpg")),
@@ -43,6 +61,23 @@ namespace Todo.ViewModels
             )
         {
             this.allItems.Add(new Models.TodoItem(bitmapImage, imageUri, title, description, date));
+
+            //保存数据到数据库
+            try
+            {
+                using (var custstmt = App.conn.Prepare("INSERT INTO Customer (ImageUri, Title, Details, Date) VALUES (?, ?, ?)"))
+                {
+                    custstmt.Bind(1, imageUri.ToString());
+                    custstmt.Bind(2, title);
+                    custstmt.Bind(3, description);
+                    custstmt.Bind(4, date.ToString());
+                    custstmt.Step();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         public void RemoveTodoItem(string id)
@@ -102,7 +137,7 @@ namespace Todo.ViewModels
         //把图片保存到应用目录下
         public static async Task<Uri> SaveLocalImage(StorageFile file)
         {
-            StorageFolder folder = ApplicationData.Current.LocalFolder;
+            StorageFolder folder = ApplicationData.Current.LocalFolder; //应用数据目录
 
             using (FileRandomAccessStream stream = (FileRandomAccessStream)await file.OpenAsync(FileAccessMode.ReadWrite))
             {

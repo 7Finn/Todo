@@ -34,6 +34,12 @@ namespace Todo
 {
     public sealed partial class MainPage : Page
     {
+        private ViewModels.TodoItemViewModel ViewModel { get; set; }
+        private Uri tempImageUri;
+        private StorageFile tempImageFile;
+        private DataTransferManager dataTransferManager = DataTransferManager.GetForCurrentView();//数据共享对象
+        private Models.TodoItem shareTodoItem;
+
 
         public MainPage()
         {
@@ -44,12 +50,6 @@ namespace Todo
             this.ViewModel = new ViewModels.TodoItemViewModel();
 
         }
-
-        ViewModels.TodoItemViewModel ViewModel { get; set; }
-
-        //临时储存图片选择器的Uri
-        Uri tempImageUri;
-        StorageFile tempImageFile;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -186,7 +186,6 @@ namespace Todo
             }
         }
 
-
         private void Clear()
         {
             TextTitle.Text = "";
@@ -242,10 +241,6 @@ namespace Todo
         {
             DataTransferManager.GetForCurrentView().DataRequested -= DataTransferManager_DataRequested;
         }
-
-
-        DataTransferManager dataTransferManager = DataTransferManager.GetForCurrentView();//数据共享对象
-        private Models.TodoItem shareTodoItem;
 
         private async void DataTransferManager_DataRequested(DataTransferManager sender, DataRequestedEventArgs args)
         {

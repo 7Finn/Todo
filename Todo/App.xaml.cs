@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SQLitePCL;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -28,6 +29,9 @@ namespace Todo
         /// 初始化单一实例应用程序对象。这是执行的创作代码的第一行，
         /// 已执行，逻辑上等同于 main() 或 WinMain()。
         /// </summary>
+        /// 
+        public static SQLiteConnection conn;
+
         public App()
         {
             Microsoft.ApplicationInsights.WindowsAppInitializer.InitializeAsync(
@@ -35,6 +39,7 @@ namespace Todo
                 Microsoft.ApplicationInsights.WindowsCollectors.Session);
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+            conn = new SQLiteConnection("todolist.db");
         }
 
         /// <summary>
