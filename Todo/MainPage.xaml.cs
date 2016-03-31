@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.DataTransfer;
@@ -165,6 +166,17 @@ namespace Todo
         private void ClearButton_Clicked(object sender, RoutedEventArgs e)
         {
             Clear();
+        }
+
+        private async void QueryButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            string key = Query.Text;
+            if (key != "")
+            {
+                StringBuilder sb = ViewModel.GetQueryTodoItem(key);
+                var messageDialog = new MessageDialog(sb.ToString());
+                await messageDialog.ShowAsync();
+            }
         }
 
         private async void PickPicture(object sender, RoutedEventArgs e)

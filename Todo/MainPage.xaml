@@ -51,7 +51,7 @@
                 <TextBlock x:Name="HeaderTitle" Text="Todos" Style="{StaticResource HeaderTitleStyle}" FontFamily="Yu Gothic UI"/>
             </Border>
             <TextBox Grid.Column="1" x:Name="Query" Width="120" Height="32" HorizontalAlignment="Right" FontSize="16"></TextBox>
-            <AppBarButton Grid.Column="2" x:Name="QueryButton" HorizontalAlignment="Center" Margin="10,0" VerticalAlignment="Center" Width="50" Padding="0" Icon="Find" Height="40"/>
+            <AppBarButton Grid.Column="2" x:Name="QueryButton" Click="QueryButton_Clicked" HorizontalAlignment="Center" Margin="10,0" VerticalAlignment="Center" Width="50" Padding="0" Icon="Find" Height="40"/>
         </Grid>
 
 

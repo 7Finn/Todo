@@ -49,12 +49,12 @@ namespace Todo.ViewModels
                     string title = (string)statement[2];
                     string description = (string)statement[3];
 
+                    
 
                     //在本地列表中添加
                     this.allItems.Add(new Models.TodoItem(id, imageUri, title, description, DateTimeOffset.Now));
                 }
             }
-
         }
 
         public TodoItemViewModel()
@@ -181,6 +181,25 @@ namespace Todo.ViewModels
                 }
             }
 
+        }
+
+        public StringBuilder GetQueryTodoItem(string key)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < allItems.Count; ++i)
+            {
+                Models.TodoItem temp = allItems[i];
+                if (temp.title.Contains(key)
+                    || temp.description.Contains(key)
+                    || temp.date.ToString().Contains(key))
+                {
+                    string item = "Title: " + temp.title + " Description: " + temp.description
+                        + " Date: " + temp.date.ToString() + "\n";
+                    sb.Append(item);
+                }
+            }
+            return sb;
         }
     }
 }
