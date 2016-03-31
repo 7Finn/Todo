@@ -28,56 +28,65 @@ namespace Todo.ViewModels
         {
             var db = App.conn;
             string sql = @"CREATE TABLE IF NOT EXISTS
-                           Customer (Id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                           TodoItem (Id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                      ImageUri   VARCHAR(140),
                                      Title      VARCHAR(140),
                                      Details    VARCHAR(140),
-                                     Date       VARCHAR(140)
+                                     Date       DATETIME
                            );";
+
             using (var statement = db.Prepare(sql))
             {
                 statement.Step();
             }
+
+            using (var statement = App.conn.Prepare("SELECT * FROM TodoItem"))
+            {
+                while (SQLiteResult.DONE != statement.Step())
+                {
+                    string id = ((long)statement[0]).ToString();
+                    Uri imageUri = new Uri(statement[1].ToString());
+                    string title = (string)statement[2];
+                    string description = (string)statement[3];
+
+
+                    //在本地列表中添加
+                    this.allItems.Add(new Models.TodoItem(id, imageUri, title, description, DateTimeOffset.Now));
+                }
+            }
+
         }
+
         public TodoItemViewModel()
         {
             LoadDatabase();
-            // 加个用来测试的item
-            AddTodoItem(
-                new BitmapImage(new Uri("ms-appx:///Assets/Test.jpg")),
-                new Uri("ms-appx:///Assets/Test.jpg"),
-                "测试项目",
-                "测试内容",
-                DateTimeOffset.Now
-                );
         }
 
-        public void AddTodoItem(
-            BitmapImage bitmapImage,
-            Uri imageUri,
-            string title,
-            string description,
-            DateTimeOffset date
-            )
+        public void AddTodoItem(Uri imageUri, string title, string description, DateTimeOffset date)
         {
-            this.allItems.Add(new Models.TodoItem(bitmapImage, imageUri, title, description, date));
 
             //保存数据到数据库
             try
             {
-                using (var custstmt = App.conn.Prepare("INSERT INTO Customer (ImageUri, Title, Details, Date) VALUES (?, ?, ?)"))
+                using (var lodoitem = App.conn.Prepare("INSERT INTO TodoItem (ImageUri, Title, Details, Date) VALUES (?, ?, ?, ?)"))
                 {
-                    custstmt.Bind(1, imageUri.ToString());
-                    custstmt.Bind(2, title);
-                    custstmt.Bind(3, description);
-                    custstmt.Bind(4, date.ToString());
-                    custstmt.Step();
+                    lodoitem.Bind(1, imageUri.ToString());
+                    lodoitem.Bind(2, title);
+                    lodoitem.Bind(3, description);
+                    lodoitem.Bind(4, date.ToString("s"));
+                    lodoitem.Step();
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex);
             }
+
+            //获取刚刚添加数据的ID
+            string id = App.conn.LastInsertRowId().ToString();
+
+            //在本地列表中添加
+            this.allItems.Add(new Models.TodoItem(id, imageUri, title, description, date));
         }
 
         public void RemoveTodoItem(string id)
@@ -86,12 +95,19 @@ namespace Todo.ViewModels
             Models.TodoItem temp = null;
             for (int i = 0; i < allItems.Count; ++i)
             {
-                if (allItems[i].GetId() == id) temp = allItems[i];
+                if (allItems[i].id == id) temp = allItems[i];
             }
             allItems.Remove(temp);
 
             // set selectedItem to null after remove
             this.selectedItem = null;
+
+            //在数据库中删除对应id的数据
+            using (var statement = App.conn.Prepare("DELETE FROM TodoItem WHERE Id = ?"))
+            {
+                statement.Bind(1, int.Parse(id));
+                statement.Step();
+            }
         }
 
         public Models.TodoItem GetLastTodoItem()
@@ -104,14 +120,13 @@ namespace Todo.ViewModels
             Models.TodoItem temp = null;
             for (int i = 0; i < allItems.Count; ++i)
             {
-                if (allItems[i].GetId() == id) temp = allItems[i];
+                if (allItems[i].id == id) temp = allItems[i];
             }
             return temp;
         }
 
         public void UpdateTodoItem(
             string id,
-            BitmapImage bitmapImage,
             Uri imageUri,
             string title,
             string description,
@@ -121,9 +136,8 @@ namespace Todo.ViewModels
             Models.TodoItem temp = null;
             for (int i = 0; i < allItems.Count; ++i)
             {
-                if (allItems[i].GetId() == id) temp = allItems[i];
+                if (allItems[i].id == id) temp = allItems[i];
             }
-            temp.bitmapImage = bitmapImage;
             temp.ImageUri = imageUri;
             temp.title = title;
             temp.description = description;
@@ -131,6 +145,17 @@ namespace Todo.ViewModels
 
             // set selectedItem to null after update
             this.selectedItem = null;
+
+            //更新数据库：
+            using (var item = App.conn.Prepare("UPDATE TodoItem SET ImageUri = ?, Title = ?, Details = ?, Date = ? WHERE Id = ?"))
+            {
+                item.Bind(1, imageUri.ToString());
+                item.Bind(2, title);
+                item.Bind(3, description);
+                item.Bind(4, date.ToString());
+                item.Bind(5, int.Parse(id));
+                item.Step();
+            }
         }
 
 

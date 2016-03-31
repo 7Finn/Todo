@@ -39,7 +39,8 @@ namespace Todo
         }
 
         private ViewModels.TodoItemViewModel ViewModel;
-        Uri tempImageUri;
+        private Uri tempImageUri;
+        private StorageFile tempImageFile;
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
         {
@@ -49,7 +50,7 @@ namespace Todo
             if (ViewModel.SelectedItem != null)
             {
                 HeaderTitle.Text = "Edit Todo";
-                image.Source = ViewModel.SelectedItem.bitmapImage;
+                image.Source = new BitmapImage(ViewModel.SelectedItem.ImageUri);
                 TextTitle.Text = ViewModel.SelectedItem.title;
                 TextDetails.Text = ViewModel.SelectedItem.description;
                 DatePicker.Date = ViewModel.SelectedItem.date;
@@ -73,7 +74,7 @@ namespace Todo
         }
 
 
-        private void CreateButton_Clicked(object sender, RoutedEventArgs e)
+        private async void CreateButton_Clicked(object sender, RoutedEventArgs e)
         {
             if (TextTitle.Text == "")
             {
@@ -91,13 +92,23 @@ namespace Todo
                 return;
             }
             Frame rootFrame = Window.Current.Content as Frame;
-            BitmapImage bitmapImage = (BitmapImage)image.Source;
+
+            if (tempImageFile != null)
+            {
+                tempImageUri = await ViewModels.TodoItemViewModel.SaveLocalImage(tempImageFile);
+            }
+            else
+            {
+                if (ViewModel.SelectedItem != null)
+                    tempImageUri = ViewModel.SelectedItem.ImageUri;
+                else
+                    tempImageUri = new Uri("ms-appx:///Assets/Picture_246px.png");
+            }
 
             if (ViewModel.SelectedItem != null)
             {
                 ViewModel.UpdateTodoItem(
-                    ViewModel.SelectedItem.GetId(),
-                    bitmapImage,
+                    ViewModel.SelectedItem.id,
                     tempImageUri,
                     TextTitle.Text,
                     TextDetails.Text,
@@ -107,7 +118,7 @@ namespace Todo
             }
             else
             {
-                ViewModel.AddTodoItem(bitmapImage, tempImageUri, TextTitle.Text, TextDetails.Text, DatePicker.Date);
+                ViewModel.AddTodoItem(tempImageUri, TextTitle.Text, TextDetails.Text, DatePicker.Date);
                 rootFrame.Navigate(typeof(MainPage), ViewModel);
             }
         }
@@ -120,6 +131,8 @@ namespace Todo
 
             ///把图片还原为空白图片
             image.Source = new BitmapImage(new Uri("ms-appx:///Assets/Picture_246px.png"));
+            tempImageUri = null;
+            tempImageFile = null;
         }
 
         private void DeleteButton_Clicked(object sender, RoutedEventArgs e)
@@ -127,7 +140,7 @@ namespace Todo
             Frame rootFrame = Window.Current.Content as Frame;
             if (ViewModel.SelectedItem != null)
             {
-                ViewModel.RemoveTodoItem(ViewModel.SelectedItem.GetId());
+                ViewModel.RemoveTodoItem(ViewModel.SelectedItem.id);
                 rootFrame.Navigate(typeof(MainPage), ViewModel);
             }
             else
@@ -145,8 +158,6 @@ namespace Todo
             picker.FileTypeFilter.Add(".jpeg");
             picker.FileTypeFilter.Add(".png");
 
-            // var myPictures = await Windows.Storage.StorageLibrary.GetLibraryAsync(Windows.Storage.KnownLibraryId.Pictures);
-
 
             Windows.Storage.StorageFile file = await picker.PickSingleFileAsync();
             if (file != null)
@@ -160,15 +171,14 @@ namespace Todo
 
                     bitmapImage.SetSource(fileStream);
                     image.Source = bitmapImage;
+                    tempImageFile = file;
                 }
                 //image.Source = new BitmapImage(new Uri(file.Path.ToString()));
                 // Application now has read/write access to the picked file
-                tempImageUri = new Uri(file.Path);
-                Debug.WriteLine(file.Path.ToString());
             }
             else
             {
-                // this.textBlock.Text = "Operation cancelled.";
+                Debug.WriteLine("Operation cancelled.");
             }
         }
     }

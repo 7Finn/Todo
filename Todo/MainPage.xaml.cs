@@ -48,7 +48,6 @@ namespace Todo
             viewTitleBar.BackgroundColor = Windows.UI.Colors.CornflowerBlue;
             viewTitleBar.ButtonBackgroundColor = Windows.UI.Colors.CornflowerBlue;
             this.ViewModel = new ViewModels.TodoItemViewModel();
-
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -83,7 +82,7 @@ namespace Todo
             if (InlineToDoItemViewGrid.Visibility == Visibility.Visible)
             {
                 CreateButton.Content = "Update";
-                image.Source = ViewModel.SelectedItem.bitmapImage;
+                image.Source = new BitmapImage(ViewModel.SelectedItem.ImageUri);
                 TextTitle.Text = ViewModel.SelectedItem.title;
                 TextDetails.Text = ViewModel.SelectedItem.description;
                 DatePicker.Date = ViewModel.SelectedItem.date;
@@ -117,13 +116,23 @@ namespace Todo
 
             Frame rootFrame = Window.Current.Content as Frame;
             BitmapImage bitmapImage = (BitmapImage)image.Source;
-            tempImageUri = await ViewModels.TodoItemViewModel.SaveLocalImage(tempImageFile);
+
+            if (tempImageFile != null)
+            {
+                tempImageUri = await ViewModels.TodoItemViewModel.SaveLocalImage(tempImageFile);
+            }
+            else
+            {
+                if (ViewModel.SelectedItem != null)
+                    tempImageUri = ViewModel.SelectedItem.ImageUri;
+                else
+                    tempImageUri = new Uri("ms-appx:///Assets/Picture_246px.png");
+            }
 
             if (ViewModel.SelectedItem != null)
             {
                 ViewModel.UpdateTodoItem(
-                    ViewModel.SelectedItem.GetId(),
-                    bitmapImage,
+                    ViewModel.SelectedItem.id,
                     tempImageUri,
                     TextTitle.Text,
                     TextDetails.Text,
@@ -135,7 +144,6 @@ namespace Todo
             else
             {
                 ViewModel.AddTodoItem(
-                    bitmapImage,
                     tempImageUri,
                     TextTitle.Text,
                     TextDetails.Text,
@@ -193,7 +201,8 @@ namespace Todo
             DatePicker.Date = DateTime.Now; //还原现在时间
 
             image.Source = new BitmapImage(new Uri("ms-appx:///Assets/Picture_246px.png"));
-
+            tempImageFile = null;
+            tempImageUri = null;
             CreateButton.Content = "Create";
         }
 

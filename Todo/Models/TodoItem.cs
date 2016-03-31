@@ -19,7 +19,7 @@ namespace Todo.Models
     {
         private bool _completed;
         private double _opacity;
-        private BitmapImage _bitmapImage;
+        private Uri _imageUri;
         private string _title;
         private string _id;
 
@@ -31,17 +31,15 @@ namespace Todo.Models
             }
         }
 
-
-        public Uri ImageUri { get; set; }
-
-        public BitmapImage bitmapImage {
+        public Uri ImageUri
+        {
             get
             {
-                return this._bitmapImage;
+                return this._imageUri;
             }
             set
             {
-                _bitmapImage = value;
+                _imageUri = value;
                 this.OnPropertyChanged();
             }
         }
@@ -88,22 +86,15 @@ namespace Todo.Models
         public DateTimeOffset date { get; set; }
 
 
-        public TodoItem(BitmapImage bitmapImage, Uri imageUri, string title, string description, DateTimeOffset dateTime)
+        public TodoItem(string id, Uri imageUri, string title, string description, DateTimeOffset dateTime)
         {
-            this._id = Guid.NewGuid().ToString(); //生成id
-            this.bitmapImage = bitmapImage;
+            this._id = id; //生成id
             this.ImageUri = imageUri;
             this.title = title;
             this.description = description;
             this.date = dateTime;
             this.completed = false; //默认为未完成
         }
-
-        public string GetId()
-        {
-            return _id;
-        }
-
 
         public void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
