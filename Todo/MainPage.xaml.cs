@@ -41,7 +41,6 @@ namespace Todo
         private DataTransferManager dataTransferManager = DataTransferManager.GetForCurrentView();//数据共享对象
         private Models.TodoItem shareTodoItem;
 
-
         public MainPage()
         {
             this.InitializeComponent();

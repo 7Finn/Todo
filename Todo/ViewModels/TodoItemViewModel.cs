@@ -26,7 +26,6 @@ namespace Todo.ViewModels
 
         private void LoadDatabase()
         {
-            var db = App.conn;
             string sql = @"CREATE TABLE IF NOT EXISTS
                            TodoItem (Id     INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                                      ImageUri   VARCHAR(140),
@@ -35,7 +34,7 @@ namespace Todo.ViewModels
                                      Date       DATETIME
                            );";
 
-            using (var statement = db.Prepare(sql))
+            using (var statement = App.conn.Prepare(sql))
             {
                 statement.Step();
             }
@@ -48,11 +47,11 @@ namespace Todo.ViewModels
                     Uri imageUri = new Uri(statement[1].ToString());
                     string title = (string)statement[2];
                     string description = (string)statement[3];
-
+                    DateTime date = DateTime.Parse((string)statement[4]);
                     
 
                     //在本地列表中添加
-                    this.allItems.Add(new Models.TodoItem(id, imageUri, title, description, DateTimeOffset.Now));
+                    this.allItems.Add(new Models.TodoItem(id, imageUri, title, description, new DateTimeOffset(date)));
                 }
             }
         }
@@ -152,7 +151,7 @@ namespace Todo.ViewModels
                 item.Bind(1, imageUri.ToString());
                 item.Bind(2, title);
                 item.Bind(3, description);
-                item.Bind(4, date.ToString());
+                item.Bind(4, date.ToString("s"));
                 item.Bind(5, int.Parse(id));
                 item.Step();
             }
@@ -187,6 +186,23 @@ namespace Todo.ViewModels
         {
             StringBuilder sb = new StringBuilder();
 
+            using (var statement = App.conn.Prepare("SELECT * FROM TodoItem WHERE Title LIKE ? OR Details LIKE ? OR Date LIKE ? " )) {
+                statement.Bind(1, "%" + key + "%");
+                statement.Bind(2, "%" + key + "%");
+                statement.Bind(3, "%" + key + "%");
+                while (SQLiteResult.DONE != statement.Step())
+                {
+                    string title = (string)statement[2];
+                    string description = (string)statement[3];
+                    DateTime date = DateTime.Parse((string)statement[4]);
+
+                    string item = "Title: " + title + " Description: " + description
+                        + " Date: " + date.ToString() + "\n";
+                    sb.Append(item);
+                }
+            }
+
+            /*
             for (int i = 0; i < allItems.Count; ++i)
             {
                 Models.TodoItem temp = allItems[i];
@@ -199,6 +215,7 @@ namespace Todo.ViewModels
                     sb.Append(item);
                 }
             }
+            */
             return sb;
         }
     }

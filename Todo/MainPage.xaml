@@ -47,9 +47,7 @@
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
-            <Border Grid.Column="0" VerticalAlignment="Top" Width="auto" Style="{StaticResource HeaderTitleBorderStyle}">
-                <TextBlock x:Name="HeaderTitle" Text="Todos" Style="{StaticResource HeaderTitleStyle}" FontFamily="Yu Gothic UI"/>
-            </Border>
+            <TextBlock x:Name="HeaderTitle" Text="Todos"  Grid.Column="0" VerticalAlignment="Top" Width="auto" Style="{StaticResource HeaderTitleStyle}" FontFamily="Yu Gothic UI"/>
             <TextBox Grid.Column="1" x:Name="Query" Width="120" Height="32" HorizontalAlignment="Right" FontSize="16"></TextBox>
             <AppBarButton Grid.Column="2" x:Name="QueryButton" Click="QueryButton_Clicked" HorizontalAlignment="Center" Margin="10,0" VerticalAlignment="Center" Width="50" Padding="0" Icon="Find" Height="40"/>
         </Grid>
@@ -63,7 +61,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <ListView x:Name="TodosListView" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.AllItems}" ItemClick="TodoItem_ItemClicked">
+            <ListView x:Name="TodosListView" IsItemClickEnabled="True" ItemsSource="{x:Bind ViewModel.AllItems}" ItemClick="TodoItem_ItemClicked" BorderThickness="0,1,0,0" BorderBrush="#FF3599DE" Padding="0">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="md:TodoItem">
                         <UserControl>
@@ -110,7 +108,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Grid x:Name="InlineToDoItemViewGrid" Grid.Column="1" BorderThickness="1,0,0,0" BorderBrush="#FF3599DE">
+            <Grid x:Name="InlineToDoItemViewGrid" Grid.Column="1" BorderThickness="1,1,0,0" BorderBrush="#FF3599DE">
                 <ScrollViewer Margin="20">
                     <StackPanel DataContext="{Binding SelectedItem, ElementName=TodosListView}">
                         <Image x:Name="image" Source="Assets/Picture_246px.png" Width="350" Height="180" Margin="4" RenderTransformOrigin="0.5,0.5">
